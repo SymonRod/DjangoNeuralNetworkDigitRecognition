@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "/home/rod/Documents/neuralNetwork/digitRecognition/venv/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintPath": "pylint",
+    "jupyter.jupyterServerType": "local"
+}

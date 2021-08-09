@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content=
+            "width=device-width, initial-scale=1.0">
+    <title>
+    </title>
+      
+    <style>
+        * {
+            overflow: hidden;
+        }
+        body {
+            text-align: center;
+        }
+        h1 {
+            color: green;
+        }
+
+        canvas {
+            border: 1px solid;
+        }
+    </style>
+</head>
+  
+<body>
+    <button id="Clear">Clear</button>
+    <button id="submit">Invia</button>
+    <canvas id="canvas"></canvas>
+    <div id="image_for_crop">
+
+    </div>
+</body>
+  
+</html>
+<script>
+
+async function postData(url = '', data = {}) {
+    // Default options are marked with *
+    const response = await fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(data) // body data type must match "Content-Type" header
+    });
+    return response.json(); // parses JSON response into native JavaScript objects
+}
+// wait for the content of the window element
+// to load, then performs the operations.
+// This is considered best practice.
+window.addEventListener('load', ()=>{
+        resize(); // Resizes the canvas once the window loads
+        document.addEventListener('mousedown', startPainting);
+        document.addEventListener('mouseup', stopPainting);
+        document.addEventListener('mousemove', sketch);
+        window.addEventListener('resize', resize);
+        document.getElementById('Clear').addEventListener('click',clearCanvas);
+        document.getElementById('submit').addEventListener('click',sendData);
+    });
+        
+    const canvas = document.querySelector('#canvas');
+       
+    // Context for the canvas for 2 dimensional operations
+    const ctx = canvas.getContext('2d');
+    
+
+    function sendData() {
+        console.log("Invia")
+        var image = new Image();
+        image.id = "pic";
+        image.src = canvas.toDataURL();
+        console.log(canvas.toDataURL());
+        document.getElementById('image_for_crop').appendChild(image);
+
+        data = {'data':canvas.toDataURL()}
+
+
+        
+       
+
+        postData('/get_number', data)
+        .then(data => {
+            console.log(data); // JSON data parsed by `data.json()` call
+            alert(data['response'])
+        });
+
+    }
+
+    function clearCanvas(){
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        //console.log("ClearCanvas")
+        //ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+        
+    // Resizes the canvas to the available size of the window.
+    function resize(){
+      ctx.canvas.width = 400;
+      ctx.canvas.height = 400;
+    }
+        
+    // Stores the initial position of the cursor
+    let coord = {x:0 , y:0}; 
+       
+    // This is the flag that we are going to use to 
+    // trigger drawing
+    let paint = false;
+        
+    // Updates the coordianates of the cursor when 
+    // an event e is triggered to the coordinates where 
+    // the said event is triggered.
+    function getPosition(event){
+      coord.x = event.clientX - canvas.offsetLeft;
+      coord.y = event.clientY - canvas.offsetTop;
+    }
+      
+    // The following functions toggle the flag to start
+    // and stop drawing
+    function startPainting(event){
+      paint = true;
+      getPosition(event);
+    }
+    function stopPainting(){
+      paint = false;
+    }
+        
+    function sketch(event){
+      if (!paint) return;
+      ctx.beginPath();
+        
+      ctx.lineWidth = 25;
+       
+      // Sets the end of the lines drawn
+      // to a round shape.
+      ctx.lineCap = 'round';
+        
+      ctx.strokeStyle = 'black';
+          
+      // The cursor to start drawing
+      // moves to this coordinate
+      ctx.moveTo(coord.x, coord.y);
+       
+      // The position of the cursor
+      // gets updated as we move the
+      // mouse around.
+      getPosition(event);
+       
+      // A line is traced from start
+      // coordinate to this coordinate
+      ctx.lineTo(coord.x , coord.y);
+        
+      // Draws the line.
+      ctx.stroke();
+
+
+    }
+
+
+    clearCanvas();
+
+</script>
